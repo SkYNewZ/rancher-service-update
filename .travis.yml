@@ -1,0 +1,24 @@
+language: go
+
+go:
+  - "1.10"
+
+script:
+  - CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o rancher-service-update .
+  - docker build -t skynewz/rancher-service-update:latest --no-cache .
+
+deploy:
+  - provider: releases
+    api_key: $GITHUB_TOKEN
+    file: rancher-service-update
+    skip_cleanup: true
+    overwrite: true
+    name: "v$TRAVIS_TAG"
+    on:
+      tags: true
+
+  - provider: script
+    script: bash docker_push.sh
+    skip_cleanup: true
+    on:
+      tags: true
