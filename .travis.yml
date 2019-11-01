@@ -1,16 +1,20 @@
 language: go
 
 go:
-  - "1.10"
+  - "1.13"
+
+before_script:
+  - GO111MODULE=off go get -u github.com/mitchellh/gox
 
 script:
-  - CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o rancher-service-update .
-  - docker build -t skynewz/rancher-service-update:latest --no-cache .
+  - gox -arch="amd64" -os="windows linux darwin" -output="bin/{{.Dir}}-$TRAVIS_TAG-{{.OS}}_{{.Arch}}"
+  - docker build -t rancher-service-update:latest .
 
 deploy:
   - provider: releases
     api_key: $GITHUB_TOKEN
-    file: rancher-service-update
+    file_glob: true
+    file: bin/rancher-service-update*
     skip_cleanup: true
     overwrite: true
     name: "v$TRAVIS_TAG"
@@ -18,7 +22,7 @@ deploy:
       tags: true
 
   - provider: script
-    script: bash docker_push.sh
+    script: bash scripts/docker_push.sh
     skip_cleanup: true
     on:
       tags: true

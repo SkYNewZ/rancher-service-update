@@ -2,6 +2,7 @@ package main
 
 import "time"
 
+// Service existant service in Rancher
 type Service struct {
 	ImageName  string
 	CurrentTag string
@@ -9,11 +10,13 @@ type Service struct {
 	Name       string
 }
 
+// Stack existant Stack in rancher
 type Stack struct {
 	Name     string
 	Services []Service
 }
 
+// DockerHubTagListResponse List of tags
 type DockerHubTagListResponse struct {
 	Count    int            `json:"count"`
 	Next     string         `json:"next"`
@@ -21,6 +24,7 @@ type DockerHubTagListResponse struct {
 	Results  []DockerHubTag `json:"results"`
 }
 
+// DockerHubTag Docker Hub tag
 type DockerHubTag struct {
 	Creator  int `json:"creator"`
 	FullSize int `json:"full_size"`
@@ -42,19 +46,20 @@ type DockerHubTag struct {
 	V2          bool      `json:"v2"`
 }
 
+// DockerHubClient get Docker Hub API Token
 type DockerHubClient struct {
-	Token    string `json:"token"`
-	Username string
-	Url      string
+	Token string `json:"token"`
 }
 
-type ImageRegexMatch struct {
+// DockerImageWithTag create proper image
+type DockerImageWithTag struct {
 	Username   string
 	ImageName  string
 	CurrentTag string
 }
 
-type AppConfig struct {
+// AppFlagsConfig main app config flags
+type AppFlagsConfig struct {
 	DockerUsername   string `short:"u" long:"docker-username" description:"DockerHub username" required:"true" env:"DOCKER_USERNAME"`
 	DockerPassword   string `short:"p" long:"docker-password" description:"DockerHub password" required:"true" env:"DOCKER_PASSWORD"`
 	RancherServer    string `short:"s" long:"server" description:"Rancher server URL" required:"true" env:"RANCHER_SERVER_URL"`
@@ -62,3 +67,6 @@ type AppConfig struct {
 	RancherSecretKey string `long:"secret-key" description:"Rancher API secret key" required:"true" env:"RANCHER_SECRET_KEY"`
 	Output           string `short:"o" long:"output" description:"Output type" default:"table" choice:"json" choice:"table"`
 }
+
+// AppConfig main app config
+var AppConfig AppFlagsConfig

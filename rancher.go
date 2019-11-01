@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
-	rancher "github.com/rancher/go-rancher/v2"
 	"log"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/pkg/errors"
+	rancher "github.com/rancher/go-rancher/v2"
 )
 
-func createClient(rancherURL, accessKey, secretKey string) (*rancher.RancherClient) {
+func createClient(rancherURL, accessKey, secretKey string) *rancher.RancherClient {
 	log.Println("Authenticating through Rancher Server...")
 	client, err := rancher.NewRancherClient(&rancher.ClientOpts{
 		Url:       rancherURL,
@@ -39,9 +40,9 @@ func getRancherServicesList(client rancher.RancherClient) []Stack {
 	for _, stack := range stacks.Data {
 		// all services id in this stack
 		var serviceList []Service
-		for _, serviceId := range stack.ServiceIds {
+		for _, serviceIDgo := range stack.ServiceIds {
 			// get single service info
-			service, _ := client.Service.ById(serviceId)
+			service, _ := client.Service.ById(serviceIDgo)
 			image, _ := service.Data["fields"].(map[string]interface{})
 			image = image["launchConfig"].(map[string]interface{})
 			formattedImageName := formattedImage(image["imageUuid"].(string))
@@ -60,7 +61,7 @@ func getRancherServicesList(client rancher.RancherClient) []Stack {
 	return finalList
 }
 
-func formattedImage(originalImageName string) ImageRegexMatch {
+func formattedImage(originalImageName string) DockerImageWithTag {
 	// remove `docker:`
 	originalImageName = strings.Replace(originalImageName, "docker:", "", 1)
 
@@ -74,14 +75,14 @@ func formattedImage(originalImageName string) ImageRegexMatch {
 
 	switch len(result) {
 	case 5: // custom registry with custom port. e.g cloud.canister.io:5000/skynewz/parrot-front:1.0
-		return ImageRegexMatch{Username: fmt.Sprintf("%s:%s/%s", result[0], result[1], result[2]), ImageName: result[3], CurrentTag: result[4]}
+		return DockerImageWithTag{Username: fmt.Sprintf("%s:%s/%s", result[0], result[1], result[2]), ImageName: result[3], CurrentTag: result[4]}
 	case 4: // custom registry. e.g registry.gitlab.com/skynewz/website:1.5
-		return ImageRegexMatch{Username: result[0] + "/" + result[1], ImageName: result[2], CurrentTag: result[3]}
+		return DockerImageWithTag{Username: result[0] + "/" + result[1], ImageName: result[2], CurrentTag: result[3]}
 	case 3: // docker hub image. e.g skynewz/website:1.5
-		return ImageRegexMatch{Username: result[0], ImageName: result[1], CurrentTag: result[2]}
+		return DockerImageWithTag{Username: result[0], ImageName: result[1], CurrentTag: result[2]}
 	case 2: // official docker image postgres:10 -> library/postgres:10
-		return ImageRegexMatch{Username: "library", ImageName: result[0], CurrentTag: result[1]}
+		return DockerImageWithTag{Username: "library", ImageName: result[0], CurrentTag: result[1]}
 	default:
-		return ImageRegexMatch{Username: "", ImageName: "", CurrentTag: ""}
+		return DockerImageWithTag{Username: "", ImageName: "", CurrentTag: ""}
 	}
 }

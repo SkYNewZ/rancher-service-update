@@ -9,27 +9,29 @@ This script written in Go will get all your rancher server services and compare 
 1. Download [latest binary release](https://github.com/SkYNewZ/rancher-service-update/releases/latest)
 2. (Optional) Add into your `$PATH`
 3. You need to have some required variables :
-  - DockerHub username
-  - DockerHub password
-  - Rancher API access & secret keys (check http://[SERVER_URL]:[PORT]/env/[ENV]/api/keys)
+
+- DockerHub username
+- DockerHub password
+- Rancher API access & secret keys (check http://[SERVER_URL]:[PORT]/env/[ENV]/api/keys)
 
 ```bash
-$ rancher-service-update -u=username -p=password -s=http://[SERVER_URL]:[PORT] --access-key=access_key --secret-key=secret_key # Or via environment 
+$ rancher-service-update -u=username -p=password -s=http://[SERVER_URL]:[PORT] --access-key=access_key --secret-key=secret_key # Or via environment
 ```
 
 This will print by default a **table** like :
 
-| STACK NAME | SERVICE NAME | IMAGE | ACTUAL TAG | LATEST TAG |
-| :--------: | :----------: | :---: | :--------: | :--------: |
-| Stack 1 | api | php | 7.2-stretch | 7.7-stretch |
-| | front | registry/front | 1.1.4 | 1.1.5 |
-| | database | library/postgres | 10.3-alpine | 10 |
-| Other Stack | hello-world | tutum/hello-world | latest | latest |
-| Another Stack | hello-world | ... | ... | ... |
+|  STACK NAME   | SERVICE NAME |       IMAGE       | ACTUAL TAG  | LATEST TAG  |
+| :-----------: | :----------: | :---------------: | :---------: | :---------: |
+|    Stack 1    |     api      |        php        | 7.2-stretch | 7.7-stretch |
+|               |    front     |  registry/front   |    1.1.4    |    1.1.5    |
+|               |   database   | library/postgres  | 10.3-alpine |     10      |
+|  Other Stack  | hello-world  | tutum/hello-world |   latest    |   latest    |
+| Another Stack | hello-world  |        ...        |     ...     |     ...     |
 
 > If you want to print result as JSON, add the option `-o=json`. The default is `-o=table`
 
 ## Run as Go binary
+
 ```bash
 $ go get github.com/SkYNewZ/rancher-service-update
 # Ensure that $GOPATH is set, or if $HOME/go/bin is into your $PATH
@@ -49,6 +51,7 @@ $ docker run -it --rm \
 ```
 
 ## Usage
+
 ```
 Usage:
   rancher-services-check-updates [OPTIONS]

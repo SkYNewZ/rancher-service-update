@@ -1,14 +1,13 @@
-FROM golang:1.10-alpine3.8 as BUILDER
+FROM golang:1.13.4-alpine3.10 as BUILDER
 WORKDIR /go/src/github.com/skynewz/rancher-service-update
 
 RUN apk add --update --no-cache \
         git \
         curl \
-        ca-certificates && \
-        go get -u github.com/golang/dep/cmd/dep
+        ca-certificates
 
 COPY . .
-RUN dep ensure
+RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o rancher-service-update .
 
 FROM scratch

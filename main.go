@@ -3,33 +3,45 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/olekukonko/tablewriter"
 	"os"
 	"strings"
+
+	"github.com/jessevdk/go-flags"
+	"github.com/olekukonko/tablewriter"
 )
 
 func main() {
 
-	config := getConfig()
-	rancherClient := createClient(config.RancherServer, config.RancherAccessKey, config.RancherSecretKey)
-	dockerClient := getDockerHubToken(config.DockerUsername, config.DockerPassword, DockerHubApiUrl)
+	parser := flags.NewParser(&AppConfig, flags.Default)
+	_, err := parser.Parse()
+	if err != nil {
+		os.Exit(1)
+	}
+	config := &AppConfig
 
+	// Configure Rancher SDK
+	rancherClient := createClient(config.RancherServer, config.RancherAccessKey, config.RancherSecretKey)
+	// Get Docker Hub token
+	dockerHubToken := getDockerHubToken(config.DockerUsername, config.DockerPassword)
+
+	// List rancher services
 	rancherServices := getRancherServicesList(*rancherClient)
 	unwantedRegistries := []string{"registry.gitlab.com", "cloud.canister.io"}
+
 	for _, stack := range rancherServices {
 		for i := 0; i < len(stack.Services); i++ {
 			service := &stack.Services[i]
 			if byPassRegistry(service.ImageName, unwantedRegistries) {
 				service.LatestTag = "Private registry ?"
 			} else {
-				service.LatestTag = getLastTag(getTagList(service.ImageName, dockerClient).Results)
+				service.LatestTag = getLastestTag(getTagList(service.ImageName, *dockerHubToken))
 			}
 		}
 	}
 
 	switch config.Output {
 	case "json":
-		printAsJson(rancherServices)
+		printAsJSONgo(rancherServices)
 	case "table":
 		printTable(rancherServices)
 	default:
@@ -46,7 +58,7 @@ func byPassRegistry(a string, list []string) bool {
 	return false
 }
 
-func printAsJson(stacks []Stack) {
+func printAsJSONgo(stacks []Stack) {
 	b, _ := json.Marshal(stacks)
 	fmt.Println(string(b))
 }
